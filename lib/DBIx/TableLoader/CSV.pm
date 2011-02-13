@@ -1,5 +1,5 @@
 package DBIx::TableLoader::CSV;
-# ABSTRACT: undef
+# ABSTRACT: Easily load a CSV into a database table
 
 =head1 SYNOPSIS
 
