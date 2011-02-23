@@ -36,6 +36,8 @@ C<table_name> will be set to the basename of C<file>
 so if you use C<io> instead of C<file> you will likely want to specify
 C<table_name> (otherwise C<table_name> will default to C<csv>).
 * C<io> - An IO-like object to read CSV lines from
+* C<name> - Table name;  If not given it will be set to the file basename
+or 'csv' if C<file> is not provided.
 * C<no_header> - Boolean.
 Usually the first row [header] of a CSV is the column names.
 If you specify C<columns> this module assumes you are overwriting
