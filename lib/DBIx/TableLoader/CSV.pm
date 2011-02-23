@@ -50,7 +50,6 @@ you must set C<no_header> to true in order to preserve the first row of the CSV.
 sub defaults {
 	my ($self) = @_;
 	return {
-		%{ $self->SUPER::defaults },
 		csv             => undef,
 		csv_class       => 'Text::CSV',
 		csv_defaults    => {
@@ -64,21 +63,21 @@ sub defaults {
 	};
 }
 
-sub fetchrow {
+sub get_raw_row {
 	my ($self) = @_;
 	return $self->{csv}->getline($self->{io});
 }
 
-sub name {
+sub default_name {
 	my ($self) = @_;
-	$self->{name} ||=
+	# guess name if not provided
+	return $self->{name} ||=
 		$self->{file}
 			? do {
 				require File::Basename; # core
 				File::Basename::basename($self->{file}, qr/\..+$/);
 			}
 			: 'csv';
-	return $self->SUPER::name;
 }
 
 sub prepare_data {
@@ -101,7 +100,7 @@ sub prepare_data {
 		};
 
 	# discard first row if columns given (see POD for 'no_header' option in new)
-	$self->{first_row} = $self->fetchrow()
+	$self->{first_row} = $self->get_raw_row()
 		if $self->{columns} && !$self->{no_header};
 }
 
