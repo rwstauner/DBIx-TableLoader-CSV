@@ -111,7 +111,8 @@ sub prepare_data {
 =head1 DESCRIPTION
 
 This is a subclass of L<DBIx::TableLoader> that handles
-the common operations of reading a CSV file (using the powerful L<Text::CSV>).
+the common operations of reading a CSV file
+(using the powerful L<Text::CSV> (which uses L<Text::CSV_XS> if available)).
 
 This module simplifies the task of transforming a CSV file
 into a database table.
