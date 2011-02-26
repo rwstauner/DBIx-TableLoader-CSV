@@ -12,6 +12,7 @@ package DBIx::TableLoader::CSV;
 use strict;
 use warnings;
 use parent 'DBIx::TableLoader';
+use Module::Load ();
 use Text::CSV 1.21 ();
 
 =method new
@@ -84,6 +85,8 @@ sub default_name {
 
 sub prepare_data {
 	my ($self) = @_;
+
+	Module::Load::load($self->{csv_class});
 
 	# if an object is not passed in via 'csv', create one from 'csv_opts'
 	$self->{csv} ||= $self->{csv_class}->new({
