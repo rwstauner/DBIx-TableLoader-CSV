@@ -22,6 +22,7 @@ and also L<DBIx::TableLoader/OPTIONS> for options from the base module.
 use strict;
 use warnings;
 use parent 'DBIx::TableLoader';
+use Carp qw(croak carp);
 use Module::Load ();
 use Text::CSV 1.21 ();
 
@@ -110,14 +111,18 @@ sub prepare_data {
 	});
 
 	# 'file' should be an IO object or the path to a file
-	$self->{io} ||= ref $self->{file}
-		? $self->{file}
-		: do {
-			open(my $fh, '<', $self->{file})
-				or die("Failed to open '$self->{file}': $!");
-			binmode($fh);
-			$fh;
-		};
+	$self->{io} ||= do {
+		croak("Cannot proceed without a 'file' or 'io' attribute")
+			unless my $file = $self->{file};
+		ref $file
+			? $file
+			: do {
+				open(my $fh, '<', $file)
+					or croak("Failed to open '$file': $!");
+				binmode($fh);
+				$fh;
+			};
+	};
 
 	# discard first row if columns given (see POD for 'no_header' option in new)
 	$self->{first_row} = $self->get_raw_row()
