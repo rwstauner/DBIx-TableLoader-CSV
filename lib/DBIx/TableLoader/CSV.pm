@@ -80,7 +80,7 @@ sub default_name {
 		$self->{file}
 			? do {
 				require File::Basename; # core
-				File::Basename::basename($self->{file}, qr/\..+$/);
+				File::Basename::fileparse($self->{file}, qr/\.[^.]*/);
 			}
 			: 'csv';
 }
