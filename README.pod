@@ -1,5 +1,13 @@
 =head1 DBIx::TableLoader::CSV
 
+Easily load a CSV into a database table.
+
+	my $dbh = DBI->connect(@connection_args);
+
+	DBIx::TableLoader::CSV->new(dbh => $dbh, file => $path_to_csv)->load();
+
+	# interact with new database table full of data in $dbh
+
 See module POD for more information.
 
 =cut
