@@ -150,10 +150,10 @@ The most common usage might include these options:
 * C<csv_opts> - Hashref of options to pass to the C<new> method of C<csv_class>
 See L<Text::CSV> for its list of accepted options.
 
-* C<file> - Path of a csv file to read if C<io> is not supplied
-C<table_name> will be set to the basename of C<file>
-so if you use C<io> instead of C<file> you will likely want to specify
-C<table_name> (otherwise C<table_name> will default to C<'csv'>).
+* C<file> - Path to a csv file
+The file will be opened (unless C<io> is provided)
+and its basename will be the default table name
+(which can be overwritten with the C<name> option).
 
 =end :list
 
@@ -179,9 +179,12 @@ the C<binary> option you may need to overwrite this with an empty hash.
 
 * C<io> - A filehandle or IO-like object from which to read CSV lines
 This will be used as C<< $csv->getline($io) >>.
+When providing this option you can still provide C<file>
+if you want the table name to be determined automatically
+(but no attempt will be made to open C<file>).
 
 * C<name> - Table name
-If not given it will be set to the file basename
+If not given the table name will be set to the file basename
 or C<'csv'> if C<file> is not provided.
 
 * C<no_header> - Boolean
