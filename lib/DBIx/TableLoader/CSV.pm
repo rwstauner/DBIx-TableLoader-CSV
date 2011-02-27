@@ -110,18 +110,14 @@ sub prepare_data {
 		%{ $self->{csv_opts} }
 	});
 
-	# 'file' should be an IO object or the path to a file
+	# if 'io' not provided set it to the handle returned from opening 'file'
 	$self->{io} ||= do {
 		croak("Cannot proceed without a 'file' or 'io' attribute")
 			unless my $file = $self->{file};
-		ref $file
-			? $file
-			: do {
-				open(my $fh, '<', $file)
-					or croak("Failed to open '$file': $!");
-				binmode($fh);
-				$fh;
-			};
+		open(my $fh, '<', $file)
+			or croak("Failed to open '$file': $!");
+		binmode($fh);
+		$fh;
 	};
 
 	# discard first row if columns given (see POD for 'no_header' option in new)
