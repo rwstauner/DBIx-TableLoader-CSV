@@ -120,7 +120,7 @@ sub prepare_data {
 		$fh;
 	};
 
-	# discard first row if columns given (see POD for 'no_header' option in new)
+	# discard first row if columns given (see POD for 'no_header' option)
 	$self->{first_row} = $self->get_raw_row()
 		if $self->{columns} && !$self->{no_header};
 }
