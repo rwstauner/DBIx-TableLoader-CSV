@@ -10,8 +10,9 @@ eval "require $mod" or die $@;
 #my $loader = $mod->new(io => $io, file => "$Bin/example.csv");
 
 # get_raw_row()
+foreach my $csv_class ( qw(Text::CSV Text::CSV_XS Text::CSV_PP) )
 {
-	my $loader = new_ok($mod, [io => new_io(), default_column_type => 'foo']);
+	my $loader = new_ok($mod, [io => new_io(), default_column_type => 'foo', csv_class => $csv_class]);
 	# columns determined from first row
 	is_deeply($loader->columns, [[qw(fld1 foo)], [qw(fld2 foo)]], 'columns');
 	is_deeply($loader->column_names, [qw(fld1 fld2)], 'column names');
@@ -22,6 +23,7 @@ eval "require $mod" or die $@;
 }
 
 # default_name()
+foreach my $csv_class ( qw(Text::CSV Text::CSV_XS Text::CSV_PP) )
 {
 	# we're basically testing File::Basename isn't necessary
 	foreach my $test (
@@ -31,11 +33,12 @@ eval "require $mod" or die $@;
 		['' => 'csv'],
 	){
 		my ($file, $exp) = @$test;
-		is(new_ok($mod, [io => new_io(), file => $file])->default_name, $exp, 'default_name');
+		is(new_ok($mod, [io => new_io(), file => $file, csv_class => $csv_class])->default_name, $exp, 'default_name');
 	}
 }
 
 # prepare_data() options
+#foreach my $csv_class ( qw(Text::CSV Text::CSV_XS Text::CSV_PP) )
 {
 	my $loader;
 	my $mock = Test::MockObject->new();
