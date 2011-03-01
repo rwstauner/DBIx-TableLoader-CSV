@@ -39,7 +39,7 @@ foreach my $csv_class ( qw(Text::CSV Text::CSV_XS Text::CSV_PP) )
 }
 
 # prepare_data() options
-#foreach my $csv_class ( qw(Text::CSV Text::CSV_XS Text::CSV_PP) )
+foreach my $csv_class ( qw(Text::CSV Text::CSV_XS Text::CSV_PP) )
 {
 	my $loader;
 	my $mock = Test::MockObject->new();
@@ -49,16 +49,16 @@ foreach my $csv_class ( qw(Text::CSV Text::CSV_XS Text::CSV_PP) )
 	);
 
 	# csv
-	$loader = new_ok($mod, [io => new_io()]);
-	isa_ok($loader->{csv}, 'Text::CSV');
+	$loader = new_ok($mod, [io => new_io(), csv_class => $csv_class]);
+	isa_ok($loader->{csv}, $csv_class);
 	my $csv = Fake_CSV->new({goo => 'ber'});
 	$loader = new_ok($mod, [io => new_io(), csv => $csv]);
 	is($loader->{csv}, $csv, 'csv option');
 	is($loader->{csv}->{goo}, 'ber', 'csv option');
 
 	# csv_class
-	$loader = new_ok($mod, [io => new_io()]);
-	isa_ok($loader->{csv}, 'Text::CSV');
+	$loader = new_ok($mod, [io => new_io(), csv_class => $csv_class]);
+	isa_ok($loader->{csv}, $csv_class);
 	$loader = new_ok($mod, [io => new_io(), csv_class => 'Fake_CSV']);
 	isa_ok($loader->{csv}, 'Fake_CSV');
 
