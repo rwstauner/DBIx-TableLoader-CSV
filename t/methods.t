@@ -3,6 +3,7 @@ use warnings;
 use Test::More 0.96;
 use Test::MockObject 1.09 ();
 use FindBin qw($Bin); # core
+use Symbol; # core
 
 my $mod = 'DBIx::TableLoader::CSV';
 eval "require $mod" or die $@;
@@ -97,7 +98,9 @@ done_testing;
 
 sub new_io {
 	# use fake io to avoid opening files
+	my $data = ["fld1,fld2\n", "row1,col2\n", "row2,col2\n", qq[row3,"col 2"\n]];
 	return Test::MockObject->new(
-		["fld1,fld2\n", "row1,col2\n", "row2,col2\n", qq[row3,"col 2"\n]]
-	)->mock(getline => sub { shift @{ $_[0] } });
+		# Text::CSV_PP calls eof() which requires a Glob reference
+		Symbol::gensym()
+	)->mock(getline => sub { shift @$data });
 }
