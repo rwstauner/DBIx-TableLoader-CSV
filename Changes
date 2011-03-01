@@ -2,6 +2,12 @@ Revision history for DBIx-TableLoader-CSV
 
 {{$NEXT}}
 
+1.001 2011-03-01
+
+  - No module changes
+  - Bug fix in test scripts: Use globref instead of arrayref in mocked object
+    and confirm that we are testing with Text::CSV_XS and Text::CSV_PP
+
 1.000 2011-02-27
 
   - Initial release
