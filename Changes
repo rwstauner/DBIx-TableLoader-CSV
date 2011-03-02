@@ -2,6 +2,11 @@ Revision history for DBIx-TableLoader-CSV
 
 {{$NEXT}}
 
+1.002 2011-03-02
+
+  - No module changes
+  - Bug fix in test scripts: skip subtest if csv_class does not load
+
 1.001 2011-03-01
 
   - No module changes
