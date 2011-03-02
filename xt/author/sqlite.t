@@ -15,6 +15,9 @@ my $path = 't/example.csv';
 use DBIx::TableLoader::CSV;
 
 foreach my $csv_class ( qw(Text::CSV Text::CSV_XS Text::CSV_PP) ){
+subtest "csv_class $csv_class" => sub {
+	plan skip_all => "$csv_class required for testing with it"
+		unless eval "require $csv_class";
 
 my $dbh = DBI->connect('dbi:SQLite:dbname=:memory:');
 my $records;
@@ -56,6 +59,7 @@ $records = $dbh->selectall_arrayref(q[SELECT num, "Two Words" FROM "example" WHE
 
 is_deeply($records, [[qw(3 bear)], ['4', 'hello there']], 'got expected records');
 
+}
 }
 
 done_testing;

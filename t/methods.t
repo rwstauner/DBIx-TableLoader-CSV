@@ -8,10 +8,13 @@ use Symbol; # core
 my $mod = 'DBIx::TableLoader::CSV';
 eval "require $mod" or die $@;
 
-#my $loader = $mod->new(io => $io, file => "$Bin/example.csv");
+our $csv_class;
+our %csv_classes = (map { my $e = eval "require $_"; $_ => $e } qw(Text::CSV Text::CSV_XS Text::CSV_PP));
+
+sub test_with_all_classes ($$);
 
 # get_raw_row()
-foreach my $csv_class ( qw(Text::CSV Text::CSV_XS Text::CSV_PP) )
+test_with_all_classes get_raw_row => sub
 {
 	my $loader = new_ok($mod, [io => new_io(), default_column_type => 'foo', csv_class => $csv_class]);
 	# columns determined from first row
@@ -21,10 +24,10 @@ foreach my $csv_class ( qw(Text::CSV Text::CSV_XS Text::CSV_PP) )
 	is_deeply($loader->get_raw_row, [qw(row1 col2)],     'raw row 1');
 	is_deeply($loader->get_row,     [qw(row2 col2)],     'row 2');
 	is_deeply($loader->get_raw_row, [qw(row3), "col 2"], 'raw row 3');
-}
+};
 
 # default_name()
-foreach my $csv_class ( qw(Text::CSV Text::CSV_XS Text::CSV_PP) )
+test_with_all_classes default_name => sub
 {
 	# we're basically testing File::Basename isn't necessary
 	foreach my $test (
@@ -36,10 +39,10 @@ foreach my $csv_class ( qw(Text::CSV Text::CSV_XS Text::CSV_PP) )
 		my ($file, $exp) = @$test;
 		is(new_ok($mod, [io => new_io(), file => $file, csv_class => $csv_class])->default_name, $exp, 'default_name');
 	}
-}
+};
 
 # prepare_data() options
-foreach my $csv_class ( qw(Text::CSV Text::CSV_XS Text::CSV_PP) )
+test_with_all_classes 'prepare_data() options' => sub
 {
 	my $loader;
 	my $mock = Test::MockObject->new();
@@ -92,7 +95,7 @@ foreach my $csv_class ( qw(Text::CSV Text::CSV_XS Text::CSV_PP) )
 	$loader = new_ok($mod, [io => new_io(), columns => [qw(goo ber)], no_header => 1]);
 	is_deeply($loader->column_names, [qw(goo ber)],   'provided column names');
 	is_deeply($loader->get_raw_row, [qw(fld1 fld2)],  'no_header option returns 1st row of csv in 2st row of data');
-}
+};
 
 done_testing;
 
@@ -103,4 +106,17 @@ sub new_io {
 		# Text::CSV_PP calls eof() which requires a Glob reference
 		Symbol::gensym()
 	)->mock(getline => sub { shift @$data });
+}
+
+sub test_with_all_classes ($$) {
+	my ($name, $subtest) = @_;
+	foreach my $class ( keys %csv_classes ){
+		local $csv_class = $class;
+		subtest "$name with $csv_class" => sub {
+			plan skip_all => "$csv_class required for testing with it"
+				if ! $csv_classes{$csv_class};
+
+			$subtest->();
+		};
+	}
 }
