@@ -5,24 +5,6 @@ use warnings;
 package DBIx::TableLoader::CSV;
 # ABSTRACT: Easily load a CSV into a database table
 
-=head1 SYNOPSIS
-
-  my $dbh = DBI->connect(@connection_args);
-
-  DBIx::TableLoader::CSV->new(dbh => $dbh, file => $path_to_csv)->load();
-
-  # interact with new database table full of data in $dbh
-
-In most cases simply calling C<load()> is sufficient,
-but all methods are documented below in case you are curious
-or want to do something a little trickier.
-
-There are many options available for configuration.
-See L</OPTIONS> for those specific to this module
-and also L<DBIx::TableLoader/OPTIONS> for options from the base module.
-
-=cut
-
 use parent 'DBIx::TableLoader';
 use Carp qw(croak carp);
 use Module::Load ();
@@ -129,6 +111,17 @@ sub prepare_data {
 
 1;
 
+=for test_synopsis
+my (@connection_args, $dbh, $path_to_csv);
+
+=head1 SYNOPSIS
+
+  my $dbh = DBI->connect(@connection_args);
+
+  DBIx::TableLoader::CSV->new(dbh => $dbh, file => $path_to_csv)->load();
+
+  # interact with new database table full of data in $dbh
+
 =head1 DESCRIPTION
 
 This is a subclass of L<DBIx::TableLoader> that handles
@@ -139,9 +132,17 @@ This module simplifies the task of transforming a CSV file
 into a database table.
 This functionality was the impetus for the parent module (L<DBIx::TableLoader>).
 
+In most cases simply calling C<load()> is sufficient
+(see L<DBIx::TableLoader/load>).
+The methods defined by this subclass are documented for completeness.
+
 =head1 OPTIONS
 
-The most common usage might include these options:
+There are many options available for configuration.
+Options specific to this module are listed below.
+Also see L<DBIx::TableLoader/OPTIONS> for options from the base module.
+
+Basic usage:
 
 =begin :list
 
@@ -155,8 +156,7 @@ and its basename will be the default table name
 
 =end :list
 
-If you need more customization or are using this inside of
-a larger application you may find some of these useful:
+Options for more customization/control:
 
 =begin :list
 
