@@ -1,4 +1,7 @@
 # vim: set ts=2 sts=2 sw=2 expandtab smarttab:
+use strict;
+use warnings;
+
 package DBIx::TableLoader::CSV;
 # ABSTRACT: Easily load a CSV into a database table
 
@@ -20,8 +23,6 @@ and also L<DBIx::TableLoader/OPTIONS> for options from the base module.
 
 =cut
 
-use strict;
-use warnings;
 use parent 'DBIx::TableLoader';
 use Carp qw(croak carp);
 use Module::Load ();
