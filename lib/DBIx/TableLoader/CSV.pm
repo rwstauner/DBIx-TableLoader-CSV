@@ -52,7 +52,7 @@ sub get_raw_row {
 
 If the C<name> option is not provided,
 and the C<file> option is,
-returns the file basename.
+this returns the file basename.
 
 Falls back to C<'csv'>.
 
@@ -199,6 +199,6 @@ you must set C<no_header> to true in order to preserve the first row of the CSV.
 =for :list
 * L<DBIx::TableLoader>
 * L<Text::CSV>
-* L<Text::CSV::Auto> - Alternative project attempting to automate CSV usage
+* L<Text::CSV::Auto> - Alternative project automating CSV usage
 
 =cut
