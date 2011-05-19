@@ -1,13 +1,14 @@
+# vim: set ts=2 sts=2 sw=2 expandtab smarttab:
 package DBIx::TableLoader::CSV;
 # ABSTRACT: Easily load a CSV into a database table
 
 =head1 SYNOPSIS
 
-	my $dbh = DBI->connect(@connection_args);
+  my $dbh = DBI->connect(@connection_args);
 
-	DBIx::TableLoader::CSV->new(dbh => $dbh, file => $path_to_csv)->load();
+  DBIx::TableLoader::CSV->new(dbh => $dbh, file => $path_to_csv)->load();
 
-	# interact with new database table full of data in $dbh
+  # interact with new database table full of data in $dbh
 
 In most cases simply calling C<load()> is sufficient,
 but all methods are documented below in case you are curious
@@ -38,19 +39,19 @@ See L</OPTIONS>.
 # 'new' inherited
 
 sub defaults {
-	my ($self) = @_;
-	return {
-		csv             => undef,
-		csv_class       => 'Text::CSV',
-		csv_defaults    => {
-			# Text::CSV encourages setting { binary => 1 }
-			binary => 1,
-		},
-		csv_opts        => {},
-		file            => undef,
-		io              => undef,
-		no_header       => 0,
-	};
+  my ($self) = @_;
+  return {
+    csv             => undef,
+    csv_class       => 'Text::CSV',
+    csv_defaults    => {
+      # Text::CSV encourages setting { binary => 1 }
+      binary => 1,
+    },
+    csv_opts        => {},
+    file            => undef,
+    io              => undef,
+    no_header       => 0,
+  };
 }
 
 =head1 get_raw_row
@@ -60,8 +61,8 @@ Returns C<< $csv->getline($io) >>.
 =cut
 
 sub get_raw_row {
-	my ($self) = @_;
-	return $self->{csv}->getline($self->{io});
+  my ($self) = @_;
+  return $self->{csv}->getline($self->{io});
 }
 
 =head1 default_name
@@ -75,15 +76,15 @@ Falls back to C<'csv'>.
 =cut
 
 sub default_name {
-	my ($self) = @_;
-	# guess name if not provided
-	return $self->{name} ||=
-		$self->{file}
-			? do {
-				require File::Basename; # core
-				File::Basename::fileparse($self->{file}, qr/\.[^.]*/);
-			}
-			: 'csv';
+  my ($self) = @_;
+  # guess name if not provided
+  return $self->{name} ||=
+    $self->{file}
+      ? do {
+        require File::Basename; # core
+        File::Basename::fileparse($self->{file}, qr/\.[^.]*/);
+      }
+      : 'csv';
 }
 
 =head1 prepare_data
@@ -100,29 +101,29 @@ to make things as simple and automatic as possible.
 =cut
 
 sub prepare_data {
-	my ($self) = @_;
+  my ($self) = @_;
 
-	Module::Load::load($self->{csv_class});
+  Module::Load::load($self->{csv_class});
 
-	# if an object is not passed in via 'csv', create one from 'csv_opts'
-	$self->{csv} ||= $self->{csv_class}->new({
-		%{ $self->{csv_defaults} },
-		%{ $self->{csv_opts} }
-	});
+  # if an object is not passed in via 'csv', create one from 'csv_opts'
+  $self->{csv} ||= $self->{csv_class}->new({
+    %{ $self->{csv_defaults} },
+    %{ $self->{csv_opts} }
+  });
 
-	# if 'io' not provided set it to the handle returned from opening 'file'
-	$self->{io} ||= do {
-		croak("Cannot proceed without a 'file' or 'io' attribute")
-			unless my $file = $self->{file};
-		open(my $fh, '<', $file)
-			or croak("Failed to open '$file': $!");
-		binmode($fh);
-		$fh;
-	};
+  # if 'io' not provided set it to the handle returned from opening 'file'
+  $self->{io} ||= do {
+    croak("Cannot proceed without a 'file' or 'io' attribute")
+      unless my $file = $self->{file};
+    open(my $fh, '<', $file)
+      or croak("Failed to open '$file': $!");
+    binmode($fh);
+    $fh;
+  };
 
-	# discard first row if columns given (see POD for 'no_header' option)
-	$self->{first_row} = $self->get_raw_row()
-		if $self->{columns} && !$self->{no_header};
+  # discard first row if columns given (see POD for 'no_header' option)
+  $self->{first_row} = $self->get_raw_row()
+    if $self->{columns} && !$self->{no_header};
 }
 
 1;
