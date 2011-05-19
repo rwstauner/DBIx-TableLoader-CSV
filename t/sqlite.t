@@ -6,8 +6,10 @@ use FindBin qw($Bin);
 
 # test an actual use-case
 
-eval 'require DBD::SQLite'
-  or plan skip_all => 'DBD::SQLite required for this author test';
+foreach my $mod ( qw(DBI DBD::SQLite) ){
+  eval "require $mod"
+    or plan skip_all => "$mod required for these tests";
+}
 
 my $path = 't/example.csv';
 -e $path

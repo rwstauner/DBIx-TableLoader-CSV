@@ -3,6 +3,7 @@ Revision history for DBIx-TableLoader-CSV
 {{$NEXT}}
 
   - Superficial dist/release changes
+  - Make SQLite test a regular test rather than an author test
 
 1.002     2011-03-02T14:11:30Z
 
