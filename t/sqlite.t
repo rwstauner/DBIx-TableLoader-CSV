@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use Test::More 0.96;
-use FindBin qw($Bin);
+use File::Spec::Functions qw( catfile ); # core
 
 # test an actual use-case
 
@@ -11,7 +11,7 @@ foreach my $mod ( qw(DBI DBD::SQLite) ){
     or plan skip_all => "$mod required for these tests";
 }
 
-my $path = 't/example.csv';
+my $path = catfile(qw( t data example.csv ));
 -e $path
   or plan skip_all => "Cannot find $path.  Please execute with dist root as working directory.";
 

@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Test::More 0.96;
 use Test::MockObject 1.09 ();
-use FindBin qw($Bin); # core
+use File::Spec::Functions qw( catfile ); # core
 use Symbol; # core
 
 my $mod = 'DBIx::TableLoader::CSV';
@@ -77,10 +77,10 @@ test_with_all_classes 'prepare_data() options' => sub
   # file (no io)
   is(eval { $mod->new(file => '') }, undef, 'die w/o file');
   like($@, qr/Cannot proceed without/, 'no file error');
-  is(eval { $mod->new(file => "$Bin/t/file that does/not.exist") }, undef, 'die w/o file');
+  is(eval { $mod->new(file => catfile('t', 'file that does', 'not.exist')) }, undef, 'die w/o file');
   like($@, qr/Failed to open/, 'cannot find file');
 
-  $loader = eval { $mod->new(file => "$Bin/example.csv") };
+  $loader = eval { $mod->new(file => catfile(qw( t data example.csv ))) };
   is($@, '', 'no error');
   isa_ok($loader, $mod, 'file exists');
 
