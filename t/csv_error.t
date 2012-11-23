@@ -146,5 +146,20 @@ sub test_csv {
   );
 }
 
+{
+  # most DBD's will die by themselves, but Mock will not, so set handle => die
+
+  like exception {
+    new_csv_loader('alt_sep.txt',
+      { handle_invalid_row => 'die', },
+    )->load;
+  }, qr/Row has 4 fields when 3 are expected/i, 'alternate separator breaks rows';
+
+  test_csv('alternate separator configured properly works',
+    'alt_sep.txt',
+    { handle_invalid_row => 'die', csv_opts => { sep_char => '|' } },
+    [ ['1,2,3', '4,5'], ['5,6', '7,8'] ],
+  );
+}
 
 done_testing;
