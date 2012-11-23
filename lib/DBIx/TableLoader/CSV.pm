@@ -32,6 +32,7 @@ sub defaults {
     },
     csv_opts        => {},
     file            => undef,
+    ignore_csv_errors => 0,
     io              => undef,
     no_header       => 0,
   };
@@ -41,11 +42,23 @@ sub defaults {
 
 Returns C<< $csv->getline($io) >>.
 
+After the last row is returned this will check L<Text::CSV/eof>
+and croak with the message from L<Text::CSV/error_diag>
+as described by L<Text::CSV/SYNOPSIS>.
+(If you wish to disable this behavior
+you can set C<< ignore_csv_errors => 1 >> in the constructor.)
+
 =cut
 
 sub get_raw_row {
   my ($self) = @_;
-  return $self->{csv}->getline($self->{io});
+  my $row = $self->{csv}->getline($self->{io});
+  unless( $self->{ignore_csv_errors} ){
+    if( !$row && !$self->{csv}->eof ){
+      croak 'CSV parse error: ' . $self->{csv}->error_diag;
+    }
+  }
+  return $row;
 }
 
 =head1 default_name
@@ -175,6 +188,20 @@ To turn off the C<binary> option
 you can pass C<< { binary => 0 } >> to C<csv_opts>.
 If you are using a different C<csv_class> that does not accept
 the C<binary> option you may need to overwrite this with an empty hash.
+
+* C<ignore_csv_errors> - Boolean (defaults to false)
+If L<Text::CSV> fails to parse a row it will abort
+and skip the rest of the file.
+This module detects parser errors and will C<die>
+with the message from L<Text::CSV/error_diag>
+upon failure to read the whole file.
+(This behavior is similar to (but separate from)
+setting C<< auto_diag => 2 >> in the csv options.)
+Set this option to a true value if you want to accept
+partially read CSV files rather than getting an error.
+B<Note> that other exceptions can still be thrown (including failure to open
+the file or if a misconfigured parser or malformed CSV returns a row with
+an inconsistent number of columns).
 
 * C<io> - A filehandle or IO-like object from which to read CSV lines
 This will be used as C<< $csv->getline($io) >>.

@@ -12,6 +12,20 @@ eval "require $mod" or die $@;
 use DBI ();
 use DBD::Mock ();
 
+sub mock_st {
+  my ($session, $re, %opts) = @_;
+  push @$session, {
+    statement => sub {
+      my ($sql, $state) = @_;
+      is_deeply $state->{bound_params}, $opts{bound_params}, 'bound params: ' . join(', ', @{ $opts{bound_params} })
+        if $opts{bound_params};
+      return like($sql, $re, "sql matches: $sql");
+    },
+    results   => [[]],
+    %opts,
+  };
+}
+
 sub new_csv_loader {
   my ($file, $opts) = @_;
 
@@ -25,6 +39,55 @@ sub new_csv_loader {
     file     => catfile(qw( t data ), $file),
     %$opts,
   );
+}
+
+sub test_csv {
+  my ($desc, $file, $opts, $rows, $error_re) = @_;
+  my ($table) = $file =~ /^(\w+)/;
+
+  subtest $desc => sub {
+    my $loader = new_csv_loader($file, $opts);
+    isa_ok($loader, $mod);
+
+    my $session = [];
+    mock_st($session, qr/BEGIN/);
+    mock_st($session, qr/CREATE\s+TABLE\s+"$table"/);
+
+    foreach my $row ( @$rows ){
+      mock_st($session, qr/INSERT\s+INTO\s+"$table"/, bound_params => [ @$row ]);
+    }
+
+    # expect to see COMMIT unless we're expecting an error first
+    mock_st($session, qr/COMMIT/)
+      unless $error_re;
+
+    $loader->{dbh}->{mock_session} = DBD::Mock::Session->new(csv_error => @$session);
+
+    my $caught;
+
+    try {
+      # this will validate dbi actions against the mock session
+      $loader->load;
+    }
+    catch {
+      $caught = $_[0];
+      if( $error_re ){
+        like $caught, $error_re, 'got expected error';
+      }
+      else {
+        ok 0, "got unexpected error: $caught";
+      }
+    };
+
+    if( !$caught ){
+      if( $error_re ){
+        ok 0, "no error when expected: $error_re";
+      }
+      else {
+        ok 1, 'no errors';
+      }
+    }
+  };
 }
 
 {
@@ -46,6 +109,41 @@ sub new_csv_loader {
       { csv => Text::CSV->new, csv_opts => { un_known_attr_ibute => 1 } },
     );
   }, $mod, 'csv object passed in';
+}
+
+{
+  my $rows = [
+    ['salty', "french fries", "sizzle"],
+    ['spicy', "red\\", "crackle"],
+    ['sweet', "golden brown", 'crumble'],
+  ];
+
+  my $file = 'bad_escape.csv';
+
+  test_csv('all good', $file, {}, $rows);
+
+  # CSV_PP ERROR: 4002 - EIQ - Unescaped ESC in quoted field
+  # CSV_XS ERROR: 2011 - ECR - Characters after end of quoted field @ pos 15
+
+  test_csv('insert one then error with auto_diag',
+    $file,
+    { csv_opts => { escape_char => '\\', auto_diag => 2 } },
+    [ $rows->[0] ],
+    qr/^(# )?CSV\w* ERROR: \d+ - \w+ -/,
+  );
+
+  test_csv('insert one then error with our own',
+    $file,
+    { csv_opts => { escape_char => '\\' } },
+    [ $rows->[0] ],
+    qr/^CSV parse error: /i,
+  );
+
+  test_csv('insert one, discard the error, and finish early',
+    $file,
+    { csv_opts => { escape_char => '\\' }, ignore_csv_errors => 1 },
+    [ $rows->[0] ],
+  );
 }
 
 
