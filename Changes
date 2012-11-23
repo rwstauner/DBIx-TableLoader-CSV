@@ -2,6 +2,8 @@ Revision history for DBIx-TableLoader-CSV
 
 {{$NEXT}}
 
+1.100     2012-11-23T22:23:04Z
+
   [Backward Incompatible Bug Fix]
   - Text::CSV errors are now explicitly checked when creating the object
     and after the last row is returned to ensure the whole file was read.
