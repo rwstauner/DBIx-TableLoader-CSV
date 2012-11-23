@@ -92,7 +92,8 @@ sub prepare_data {
   $self->{csv} ||= $self->{csv_class}->new({
     %{ $self->{csv_defaults} },
     %{ $self->{csv_opts} }
-  });
+  })
+    or croak "Cannot use CSV: " . $self->{csv_class}->error_diag();
 
   # if 'io' not provided set it to the handle returned from opening 'file'
   $self->{io} ||= do {
