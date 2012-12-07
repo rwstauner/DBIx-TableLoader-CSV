@@ -12,7 +12,7 @@ DBIx::TableLoader::CSV - Easily load a CSV into a database table
 
 =head1 VERSION
 
-version 1.100
+version 1.101
 
 =head1 SYNOPSIS
 
