@@ -58,8 +58,8 @@ sub test_csv {
     }
 
     # expect to see COMMIT unless we're expecting an error first
-    mock_st($session, qr/COMMIT/)
-      unless $error_re;
+    # in which case DBIx::TableLoader 1.100 will issue a rollback
+    mock_st($session, $error_re ? qr/ROLLBACK/ : qr/COMMIT/);
 
     $loader->{dbh}->{mock_session} = DBD::Mock::Session->new(csv_error => @$session);
 

@@ -5,7 +5,9 @@ use warnings;
 package DBIx::TableLoader::CSV;
 # ABSTRACT: Easily load a CSV into a database table
 
-use parent 'DBIx::TableLoader';
+use DBIx::TableLoader 1.100; # rollback after error
+our @ISA = 'DBIx::TableLoader';
+
 use Carp qw(croak carp);
 use Module::Load ();
 use Text::CSV 1.21 ();
