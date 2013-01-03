@@ -5,18 +5,15 @@ use Test::More 0.96;
 use Test::MockObject 1.09 ();
 use File::Spec::Functions qw( catfile ); # core
 use Symbol; # core
+use lib 't/lib';
+use CSVTester;
 
 my $mod = 'DBIx::TableLoader::CSV';
 eval "require $mod" or die $@;
 
-our $csv_class;
-our %csv_classes = (map { my $e = eval "require $_"; $_ => $e } qw(Text::CSV Text::CSV_XS Text::CSV_PP));
-
-sub test_with_all_classes ($$);
-
 # get_raw_row()
-test_with_all_classes get_raw_row => sub
-{
+test_with_all_csv_classes get_raw_row => sub {
+  my $csv_class = shift;
   my $loader = new_ok($mod, [io => new_io(), default_column_type => 'foo', csv_class => $csv_class]);
   # columns determined from first row
   is_deeply($loader->columns, [[qw(fld1 foo)], [qw(fld2 foo)]], 'columns');
@@ -28,8 +25,8 @@ test_with_all_classes get_raw_row => sub
 };
 
 # default_name()
-test_with_all_classes default_name => sub
-{
+test_with_all_csv_classes default_name => sub {
+  my $csv_class = shift;
   # we're basically testing File::Basename isn't necessary
   foreach my $test (
     ['/tmp/goober.csv' => 'goober'],
@@ -43,8 +40,8 @@ test_with_all_classes default_name => sub
 };
 
 # prepare_data() options
-test_with_all_classes 'prepare_data() options' => sub
-{
+test_with_all_csv_classes 'prepare_data() options' => sub {
+  my $csv_class = shift;
   my $loader;
   my $mock = Test::MockObject->new();
   $mock->fake_module('Fake_CSV',
@@ -107,17 +104,4 @@ sub new_io {
     # Text::CSV_PP calls eof() which requires a Glob reference
     Symbol::gensym()
   )->mock(getline => sub { shift @$data });
-}
-
-sub test_with_all_classes ($$) {
-  my ($name, $subtest) = @_;
-  foreach my $class ( keys %csv_classes ){
-    local $csv_class = $class;
-    subtest "$name with $csv_class" => sub {
-      plan skip_all => "$csv_class required for testing with it"
-        if ! $csv_classes{$csv_class};
-
-      $subtest->();
-    };
-  }
 }
