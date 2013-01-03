@@ -34,6 +34,8 @@ sub defaults {
     },
     csv_opts        => {},
     file            => undef,
+    file_encoding    => '',
+    file_open_layers => '',
     ignore_csv_errors => 0,
     io              => undef,
     no_header       => 0,
@@ -111,18 +113,35 @@ sub prepare_data {
     or croak "Cannot use CSV: " . $self->{csv_class}->error_diag();
 
   # if 'io' not provided set it to the handle returned from opening 'file'
-  $self->{io} ||= do {
-    croak("Cannot proceed without a 'file' or 'io' attribute")
-      unless my $file = $self->{file};
-    open(my $fh, '<', $file)
-      or croak("Failed to open '$file': $!");
-    binmode($fh);
-    $fh;
-  };
+  $self->{io} ||= $self->_open_file
+    or croak("Cannot proceed without a 'file' or 'io' attribute");
 
   # discard first row if columns given (see POD for 'no_header' option)
   $self->{first_row} = $self->get_raw_row()
     if $self->{columns} && !$self->{no_header};
+}
+
+sub _open_file {
+  my ($self) = @_;
+
+  return
+    unless my $file = $self->{file};
+
+  my $mode = '<';
+
+  if( my $layers = $self->{file_open_layers} ){
+    $mode .= $layers;
+  }
+
+  # convenience shortcut (layers would be sufficient but this is easier)
+  if( my $enc = $self->{file_encoding} ){
+    $mode .= ':encoding(' . $enc . ')';
+  }
+
+  open(my $fh, $mode, $file)
+    or croak("Failed to open '$file': $!");
+
+  return $fh;
 }
 
 1;
@@ -170,6 +189,9 @@ The file will be opened (unless C<io> is provided)
 and its basename will be the default table name
 (which can be overwritten with the C<name> option).
 
+* C<file_encoding> - The encoding of the CSV file.
+If specified this is appended to the C<open> mode as C<:encoding(ENCODING)>.
+
 =end :list
 
 Options for more customization/control:
@@ -190,6 +212,9 @@ To turn off the C<binary> option
 you can pass C<< { binary => 0 } >> to C<csv_opts>.
 If you are using a different C<csv_class> that does not accept
 the C<binary> option you may need to overwrite this with an empty hash.
+
+* C<file_open_layers> - String of arbitrary PerlIO layers
+to apply when opening the file.
 
 * C<ignore_csv_errors> - Boolean (defaults to false)
 If L<Text::CSV> fails to parse a row it will abort
