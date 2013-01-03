@@ -3,13 +3,11 @@ use strict;
 use warnings;
 use Test::More 0.96;
 use Test::MockObject 1.09 ();
-use File::Spec::Functions qw( catfile ); # core
 use Symbol; # core
 use lib 't/lib';
 use CSVTester;
 
-my $mod = 'DBIx::TableLoader::CSV';
-eval "require $mod" or die $@;
+my $mod = $CSVTester::mod;
 
 # get_raw_row()
 test_with_all_csv_classes get_raw_row => sub {

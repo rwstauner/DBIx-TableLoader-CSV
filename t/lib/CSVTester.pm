@@ -2,12 +2,22 @@ package # no_index
   CSVTester;
 
 use Test::More 0.96;
+use File::Spec::Functions qw( catfile ); # core
 use Exporter ();
 our @ISA = qw(Exporter);
 
 our @EXPORT = qw(
+  catfile
+  new_loader
   test_with_all_csv_classes
 );
+
+our $mod = 'DBIx::TableLoader::CSV';
+eval "require $mod" or die $@;
+
+sub new_loader {
+  new_ok($mod, [@_]);
+}
 
 my @csv_classes = qw(
   Text::CSV

@@ -2,12 +2,12 @@
 use strict;
 use warnings;
 use Test::More 0.96;
-use File::Spec::Functions qw( catfile ); # core
 use Try::Tiny;
 use Test::Fatal;
+use lib 't/lib';
+use CSVTester;
 
-my $mod = 'DBIx::TableLoader::CSV';
-eval "require $mod" or die $@;
+my $mod = $CSVTester::mod;
 
 use DBI ();
 use DBD::Mock ();

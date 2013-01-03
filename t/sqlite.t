@@ -2,7 +2,8 @@
 use strict;
 use warnings;
 use Test::More 0.96;
-use File::Spec::Functions qw( catfile ); # core
+use lib 't/lib';
+use CSVTester;
 
 # test an actual use-case
 
@@ -15,17 +16,13 @@ my $path = catfile(qw( t data example.csv ));
 -e $path
   or plan skip_all => "Cannot find $path.  Please execute with dist root as working directory.";
 
-use DBIx::TableLoader::CSV;
-
-foreach my $csv_class ( qw(Text::CSV Text::CSV_XS Text::CSV_PP) ){
-subtest "csv_class $csv_class" => sub {
-  plan skip_all => "$csv_class required for testing with it"
-    unless eval "require $csv_class";
+test_with_all_csv_classes sqlite => sub {
+  my $csv_class = shift;
 
 my $dbh = DBI->connect('dbi:SQLite:dbname=:memory:');
 my $records;
 
-DBIx::TableLoader::CSV->new(
+new_loader(
   dbh => $dbh,
   file => $path,
   csv_opts => {allow_whitespace => 1},
@@ -62,7 +59,6 @@ $records = $dbh->selectall_arrayref(q[SELECT num, "Two Words" FROM "example" WHE
 
 is_deeply($records, [[qw(3 bear)], ['4', 'hello there']], 'got expected records');
 
-}
-}
+};
 
 done_testing;
