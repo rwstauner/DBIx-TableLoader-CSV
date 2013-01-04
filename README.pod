@@ -12,7 +12,7 @@ DBIx::TableLoader::CSV - Easily load a CSV into a database table
 
 =head1 VERSION
 
-version 1.101
+version 1.102
 
 =head1 SYNOPSIS
 
@@ -114,6 +114,12 @@ The file will be opened (unless C<io> is provided)
 and its basename will be the default table name
 (which can be overwritten with the C<name> option).
 
+=item *
+
+C<file_encoding> - The encoding of the CSV file.
+
+If specified this is appended to the C<open> mode as C<:encoding(ENCODING)>.
+
 =back
 
 Options for more customization/control:
@@ -143,6 +149,12 @@ To turn off the C<binary> option
 you can pass C<< { binary => 0 } >> to C<csv_opts>.
 If you are using a different C<csv_class> that does not accept
 the C<binary> option you may need to overwrite this with an empty hash.
+
+=item *
+
+C<file_open_layers> - String of arbitrary PerlIO layers
+
+to apply when opening the file.
 
 =item *
 
