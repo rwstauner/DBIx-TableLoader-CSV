@@ -1,0 +1,195 @@
+# NAME
+
+DBIx::TableLoader::CSV - Easily load a CSV into a database table
+
+# VERSION
+
+version 1.102
+
+# SYNOPSIS
+
+    my $dbh = DBI->connect(@connection_args);
+
+    DBIx::TableLoader::CSV->new(dbh => $dbh, file => $path_to_csv)->load();
+
+    # interact with new database table full of data in $dbh
+
+# DESCRIPTION
+
+This is a subclass of [DBIx::TableLoader](https://metacpan.org/pod/DBIx::TableLoader) that handles
+the common operations of reading a CSV file
+(using the powerful [Text::CSV](https://metacpan.org/pod/Text::CSV) (which uses [Text::CSV\_XS](https://metacpan.org/pod/Text::CSV_XS) if available)).
+
+This module simplifies the task of transforming a CSV file
+into a database table.
+This functionality was the impetus for the parent module ([DBIx::TableLoader](https://metacpan.org/pod/DBIx::TableLoader)).
+
+In most cases simply calling `load()` is sufficient
+(see ["load" in DBIx::TableLoader](https://metacpan.org/pod/DBIx::TableLoader#load)).
+The methods defined by this subclass are documented for completeness.
+
+# METHODS
+
+## new
+
+Accepts all options described in ["OPTIONS" in DBIx::TableLoader](https://metacpan.org/pod/DBIx::TableLoader#OPTIONS)
+plus some CSV specific options.
+
+See ["OPTIONS"](#options).
+
+# get\_raw\_row
+
+Returns `$csv->getline($io)`.
+
+After the last row is returned this will check ["eof" in Text::CSV](https://metacpan.org/pod/Text::CSV#eof)
+and croak with the message from ["error\_diag" in Text::CSV](https://metacpan.org/pod/Text::CSV#error_diag)
+as described by ["SYNOPSIS" in Text::CSV](https://metacpan.org/pod/Text::CSV#SYNOPSIS).
+(If you wish to disable this behavior
+you can set `ignore_csv_errors => 1` in the constructor.)
+
+# default\_name
+
+If the `name` option is not provided,
+and the `file` option is,
+this returns the file basename.
+
+Falls back to `'csv'`.
+
+# prepare\_data
+
+This is called automatically from the constructor
+to make things as simple and automatic as possible.
+
+- Load `csv_class` if it is not.
+- Instantiate `csv_class` with `csv_defaults` and `csv_opts`.
+- Open the `file` provided unless `io` is passed instead.
+- Discard the first row if `columns` is provided and `no_header` is not.
+
+# OPTIONS
+
+There are many options available for configuration.
+Options specific to this module are listed below.
+Also see ["OPTIONS" in DBIx::TableLoader](https://metacpan.org/pod/DBIx::TableLoader#OPTIONS) for options from the base module.
+
+Basic usage:
+
+- `csv_opts` - Hashref of options to pass to the `new` method of `csv_class`
+
+    See [Text::CSV](https://metacpan.org/pod/Text::CSV) for its list of accepted options.
+
+- `file` - Path to a csv file
+
+    The file will be opened (unless `io` is provided)
+    and its basename will be the default table name
+    (which can be overwritten with the `name` option).
+
+- `file_encoding` - The encoding of the CSV file.
+
+    If specified this is appended to the `open` mode as `:encoding(ENCODING)`.
+
+Options for more customization/control:
+
+- `csv` - A [Text::CSV](https://metacpan.org/pod/Text::CSV) compatible object instance
+
+    If not supplied an instance will be created
+    using `$csv_class->new(\%csv_opts)`.
+
+- `csv_class` - The class to instantiate if `csv` is not supplied
+
+    Defaults to `Text::CSV`
+    (which will attempt to load [Text::CSV\_XS](https://metacpan.org/pod/Text::CSV_XS) and fall back to [Text::CSV\_PP](https://metacpan.org/pod/Text::CSV_PP)).
+
+- `csv_defaults` - Hashref of default options for `csv_class` constructor
+
+    Includes `{ binary => 1 }` (as encouraged by [Text::CSV](https://metacpan.org/pod/Text::CSV));
+    To turn off the `binary` option
+    you can pass `{ binary => 0 }` to `csv_opts`.
+    If you are using a different `csv_class` that does not accept
+    the `binary` option you may need to overwrite this with an empty hash.
+
+- `file_open_layers` - String of arbitrary PerlIO layers
+
+    to apply when opening the file.
+
+- `ignore_csv_errors` - Boolean (defaults to false)
+
+    If [Text::CSV](https://metacpan.org/pod/Text::CSV) fails to parse a row it will abort
+    and skip the rest of the file.
+    This module detects parser errors and will `die`
+    with the message from ["error\_diag" in Text::CSV](https://metacpan.org/pod/Text::CSV#error_diag)
+    upon failure to read the whole file.
+    (This behavior is similar to (but separate from)
+    setting `auto_diag => 2` in the csv options.)
+    Set this option to a true value if you want to accept
+    partially read CSV files rather than getting an error.
+    **Note** that other exceptions can still be thrown (including failure to open
+    the file or if a misconfigured parser or malformed CSV returns a row with
+    an inconsistent number of columns).
+
+- `io` - A filehandle or IO-like object from which to read CSV lines
+
+    This will be used as `$csv->getline($io)`.
+    When providing this option you can still provide `file`
+    if you want the table name to be determined automatically
+    (but no attempt will be made to open `file`).
+
+- `name` - Table name
+
+    If not given the table name will be set to the file basename
+    or `'csv'` if `file` is not provided.
+
+- `no_header` - Boolean
+
+    Usually the first row \[header\] of a CSV is the column names.
+    If you specify `columns` this module assumes you are overwriting
+    the usual header row so the first row of the CSV will be discarded.
+    If there is no header row on the CSV (the first row is data),
+    you must set `no_header` to true in order to preserve the first row of the CSV.
+
+# SEE ALSO
+
+- [DBIx::TableLoader](https://metacpan.org/pod/DBIx::TableLoader)
+- [Text::CSV](https://metacpan.org/pod/Text::CSV)
+- [Text::CSV::Auto](https://metacpan.org/pod/Text::CSV::Auto) - Alternative project automating CSV usage
+
+# SUPPORT
+
+## Perldoc
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc DBIx::TableLoader::CSV
+
+## Websites
+
+The following websites have more information about this module, and may be of help to you. As always,
+in addition to those websites please use your favorite search engine to discover more resources.
+
+- MetaCPAN
+
+    A modern, open-source CPAN search engine, useful to view POD in HTML format.
+
+    [http://metacpan.org/release/DBIx-TableLoader-CSV](http://metacpan.org/release/DBIx-TableLoader-CSV)
+
+## Bugs / Feature Requests
+
+Please report any bugs or feature requests by email to `bug-dbix-tableloader-csv at rt.cpan.org`, or through
+the web interface at [http://rt.cpan.org/NoAuth/ReportBug.html?Queue=DBIx-TableLoader-CSV](http://rt.cpan.org/NoAuth/ReportBug.html?Queue=DBIx-TableLoader-CSV). You will be automatically notified of any
+progress on the request by the system.
+
+## Source Code
+
+[https://github.com/rwstauner/DBIx-TableLoader-CSV](https://github.com/rwstauner/DBIx-TableLoader-CSV)
+
+    git clone https://github.com/rwstauner/DBIx-TableLoader-CSV.git
+
+# AUTHOR
+
+Randy Stauner <rwstauner@cpan.org>
+
+# COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2011 by Randy Stauner.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
