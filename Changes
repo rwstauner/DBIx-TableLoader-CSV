@@ -2,6 +2,8 @@ Revision history for DBIx-TableLoader-CSV
 
 {{$NEXT}}
 
+  - Remove Test::MockObject from tests.
+
 1.102     2013-01-04T05:35:16Z
 
   - Add 'file_encoding' and 'file_open_layers' options

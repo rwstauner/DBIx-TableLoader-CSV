@@ -2,7 +2,6 @@
 use strict;
 use warnings;
 use Test::More 0.96;
-use Test::MockObject 1.09 ();
 use Symbol; # core
 use lib 't/lib';
 use CSVTester;
@@ -41,11 +40,14 @@ test_with_all_csv_classes default_name => sub {
 test_with_all_csv_classes 'prepare_data() options' => sub {
   my $csv_class = shift;
   my $loader;
-  my $mock = Test::MockObject->new();
-  $mock->fake_module('Fake_CSV',
-    new => sub { bless( ($_[1]||{}), $_[0] ) },
-    getline => sub { [1] }
-  );
+
+  {
+    package ## no critic (Package)
+      Fake_CSV;
+    sub new { bless( ($_[1]||{}), $_[0] ) }
+    sub getline { [1] }
+    $INC{ __PACKAGE__ . '.pm' } = 1;
+  }
 
   # csv
   $loader = new_ok($mod, [io => new_io(), csv_class => $csv_class]);
@@ -95,12 +97,20 @@ test_with_all_csv_classes 'prepare_data() options' => sub {
 
 done_testing;
 
-sub new_io {
-  # use fake io to avoid opening files
+{
+  package ## no strict (Package)
+    _fake_io;
+sub new {
   my $data = ["fld1,fld2\n", "row1,col2\n", "row2,col2\n", qq[row3,"col 2"\n]];
-  return Test::MockObject->new(
-    # Text::CSV_PP calls eof() which requires a Glob reference
-    Symbol::gensym()
-  )->mock(eof => sub { undef }
-  )->mock(getline => sub { shift @$data });
+  my $class = shift;
+  bless $data, $class;
+}
+  # Text::CSV* may call eof().
+  sub eof {}
+  sub getline {
+    shift @{ $_[0] }
+  }
+  sub ::new_io {
+    return __PACKAGE__->new;
+  }
 }
