@@ -101,5 +101,6 @@ sub new_io {
   return Test::MockObject->new(
     # Text::CSV_PP calls eof() which requires a Glob reference
     Symbol::gensym()
+  )->mock(eof => sub { undef }
   )->mock(getline => sub { shift @$data });
 }
